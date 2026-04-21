@@ -151,13 +151,13 @@
         <dependency>
             <groupId>cn.iocoder.cloud</groupId>
             <artifactId>yudao-spring-boot-starter-rpc</artifactId>
-            <!-- 目的：yudao-server 单体启动，禁用 openfeign -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.cloud</groupId>
-                    <artifactId>spring-cloud-starter-openfeign</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <!-- 开发模式热重启（代码变更后自动重启） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
         </dependency>
 
     </dependencies>

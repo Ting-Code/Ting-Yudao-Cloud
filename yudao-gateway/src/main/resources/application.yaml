@@ -208,7 +208,7 @@ spring:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin # 采用 https://github.com/spring-cloud/spring-cloud-gateway/pull/866 解决响应头重复问题
 
 server:
-  port: 48080
+  port: 58080
 
 logging:
   file:

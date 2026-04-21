@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 灰度 {@link GrayLoadBalancer} 实现类
@@ -79,8 +80,17 @@ public class GrayLoadBalancer implements ReactorServiceInstanceLoadBalancer {
         // 基于 tag 过滤实例列表
         chooseInstances = filterTagServiceInstances(chooseInstances, headers);
 
-        // 随机 + 权重获取实例列表 TODO 芋艿：目前直接使用 Nacos 提供的方法，如果替换注册中心，需要重新失败该方法
-        return new DefaultResponse(NacosBalancer.getHostByRandomWeight3(chooseInstances));
+        // 随机 + 权重获取实例列表
+        // 对于非 Nacos 的 ServiceInstance（例如本地 simple discovery），Nacos 权重算法可能抛异常。
+        // 此时回退到普通随机，保证本地联调链路可用。
+        try {
+            return new DefaultResponse(NacosBalancer.getHostByRandomWeight3(chooseInstances));
+        } catch (Exception ex) {
+            log.warn("[getInstanceResponse][serviceId({}) Nacos 权重选择失败，降级为随机选择: {}]",
+                    serviceId, ex.getMessage());
+            ServiceInstance instance = chooseInstances.get(ThreadLocalRandom.current().nextInt(chooseInstances.size()));
+            return new DefaultResponse(instance);
+        }
     }
 
     /**

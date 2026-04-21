@@ -37,7 +37,7 @@ services:
       - /docker/yudao-cloud/logs:/root/logs/
       - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
     healthcheck:
-      test: [ "CMD","curl","-f","http://localhost:48081" ]
+      test: [ "CMD","curl","-f","http://localhost:58081" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -64,7 +64,7 @@ services:
     restart: always
     network_mode: host
     healthcheck:
-      test: [ "CMD","curl","-f","http://localhost:48082" ]
+      test: [ "CMD","curl","-f","http://localhost:58082" ]
       interval: 30s
       timeout: 10s
       retries: 5

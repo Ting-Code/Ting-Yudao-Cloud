@@ -21,6 +21,7 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 多环境的 {@link org.springframework.cloud.client.loadbalancer.LoadBalancerClient} 实现类
@@ -78,8 +79,7 @@ public class EnvLoadBalancerClient implements ReactorServiceInstanceLoadBalancer
 
         // TODO 芋艿：https://juejin.cn/post/7056770721858469896 相同网段
 
-        // 随机 + 权重获取实例列表 TODO 芋艿：目前直接使用 Nacos 提供的方法，如果替换注册中心，需要重新失败该方法
-        return new DefaultResponse(NacosBalancer.getHostByRandomWeight3(chooseInstances));
+        return chooseByWeightOrRandom(chooseInstances);
     }
 
     /**
@@ -99,8 +99,18 @@ public class EnvLoadBalancerClient implements ReactorServiceInstanceLoadBalancer
             chooseInstances = instances;
         }
 
-        // 随机 + 权重获取实例列表
-        return new DefaultResponse(NacosBalancer.getHostByRandomWeight3(chooseInstances));
+        return chooseByWeightOrRandom(chooseInstances);
+    }
+
+    private Response<ServiceInstance> chooseByWeightOrRandom(List<ServiceInstance> instances) {
+        try {
+            return new DefaultResponse(NacosBalancer.getHostByRandomWeight3(instances));
+        } catch (Exception ex) {
+            log.warn("[chooseByWeightOrRandom][serviceId({}) Nacos 权重选择失败，降级为随机选择: {}]",
+                    serviceId, ex.getMessage());
+            ServiceInstance instance = instances.get(ThreadLocalRandom.current().nextInt(instances.size()));
+            return new DefaultResponse(instance);
+        }
     }
 
 }
